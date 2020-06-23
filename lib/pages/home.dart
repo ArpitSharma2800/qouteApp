@@ -58,6 +58,32 @@ class _HomeState extends State<Home> {
         centerTitle: true,
         backgroundColor: Colors.black,
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton.extended(
+        elevation: 4.0,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Qoute'),
+        backgroundColor: Colors.black,
+        onPressed: () {},
+      ),
+      bottomNavigationBar: BottomAppBar(
+        // shape: CircularNotchedRectangle(),
+        // notchMargin: 4.0,
+        child: new Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.stay_current_landscape),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
       body: Container(
         color: Colors.white,
         child: ListView.builder(
