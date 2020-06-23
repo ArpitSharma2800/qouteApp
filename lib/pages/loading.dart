@@ -19,8 +19,8 @@ class _LoadingState extends State<Loading> {
         _data = data;
       });
     });
-    QouteElement user = _data[0].qoute[0];
-    print(user.title);
+    Navigator.pushReplacementNamed(context, '/home',
+        arguments: {'uuid': _data[0].uuid, 'qoute': _data});
   }
   // void setupWorldTime() async {
   //   WorldTime instance = WorldTime(
