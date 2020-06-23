@@ -13,14 +13,16 @@ class Loading extends StatefulWidget {
 class _LoadingState extends State<Loading> {
   List<Qoute> _data;
   bool load = true;
+  GlobalKey<RefreshIndicatorState> refreshKey;
   void setupQouteApi() async {
     await Services.getdata().then((data) {
+      refreshKey = GlobalKey<RefreshIndicatorState>();
       setState(() {
         _data = data;
       });
     });
     Navigator.pushReplacementNamed(context, '/home',
-        arguments: {'uuid': _data[0].uuid, 'qoute': _data});
+        arguments: {'uuid': _data[0].uuid, 'qoute': _data, 'key': refreshKey});
   }
   // void setupWorldTime() async {
   //   WorldTime instance = WorldTime(

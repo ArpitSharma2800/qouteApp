@@ -12,9 +12,21 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   Map data = {};
-
+  GlobalKey<RefreshIndicatorState> refreshKey;
   List<QouteElement> _users;
+  List<Qoute> _data;
   bool _loading = true;
+
+  Future<Null> onrefresh() async {
+    await Future.delayed(Duration(seconds: 2));
+    Navigator.pushReplacementNamed(context, '/');
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,33 +34,31 @@ class _HomeState extends State<Home> {
     setState(() {
       _loading = false;
       _users = data['qoute'][0].qoute;
+      refreshKey = data['key'];
     });
 
-    makeListTile(String lesson) => ListTile(
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-          leading: Container(
-            padding: EdgeInsets.only(right: 12.0),
-            decoration: new BoxDecoration(
-                border: new Border(
-                    top: new BorderSide(width: 2.0, color: Colors.green),
-                    right: new BorderSide(width: 2.0, color: Colors.green))),
-            child: Icon(Icons.format_quote, color: Colors.green),
-          ),
-          title: Text(
-            lesson,
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          trailing: Icon(Icons.content_copy, color: Colors.green, size: 30.0),
-          onTap: () {
-            final scaffold = Scaffold.of(context);
-            scaffold.showSnackBar(
-              SnackBar(
-                content: const Text('Updating..'),
+    void _showDialog() {
+      // flutter defined function
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          // return object of type Dialog
+          return AlertDialog(
+            title: new Text("Sorry for inconvenience"),
+            content: new Text("Our team is working on fixing this issue!"),
+            actions: <Widget>[
+              // usually buttons at the bottom of the dialog
+              new FlatButton(
+                child: new Text("Close"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
               ),
-            );
-          },
-        );
+            ],
+          );
+        },
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -61,10 +71,18 @@ class _HomeState extends State<Home> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.extended(
         elevation: 4.0,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Qoute'),
-        backgroundColor: Colors.black,
-        onPressed: () {},
+        icon: const Icon(
+          Icons.add,
+          color: Colors.black,
+        ),
+        label: const Text(
+          'Add Qoute',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        onPressed: () {
+          _showDialog();
+        },
       ),
       bottomNavigationBar: BottomAppBar(
         // shape: CircularNotchedRectangle(),
@@ -74,77 +92,80 @@ class _HomeState extends State<Home> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             IconButton(
-              icon: Icon(Icons.stay_current_landscape),
+              icon: Icon(
+                Icons.stay_current_landscape,
+                color: Colors.white,
+              ),
               onPressed: () {},
             ),
             IconButton(
-              icon: Icon(Icons.search),
+              icon: Icon(Icons.search, color: Colors.white),
               onPressed: () {},
             ),
           ],
         ),
       ),
-      body: Container(
-        color: Colors.white,
-        child: ListView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: null == _users ? 0 : _users.length,
-          itemBuilder: (context, index) {
-            String user = _users[index].title;
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Card(
-                elevation: 2.0,
-                margin:
-                    new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                  ),
-                  child: ListTile(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                    leading: Container(
-                      padding: EdgeInsets.only(right: 12.0),
-                      decoration: new BoxDecoration(
-                          border: new Border(
-                              right: new BorderSide(
-                                  width: 2.0, color: Colors.green))),
-                      child: Icon(Icons.format_quote, color: Colors.green),
+      body: RefreshIndicator(
+        // key: refreshKey,
+        color: Colors.green[500],
+        strokeWidth: 2.0,
+        displacement: 100.0,
+        onRefresh: () async {
+          await onrefresh();
+        },
+        child: Container(
+          color: Colors.white,
+          child: ListView.builder(
+            scrollDirection: Axis.vertical,
+            itemCount: null == _users ? 0 : _users.length,
+            itemBuilder: (context, index) {
+              String user = _users[index].title;
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Card(
+                  elevation: 2.0,
+                  margin:
+                      new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
                     ),
-                    title: Text(
-                      user,
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
+                      leading: Container(
+                        padding: EdgeInsets.only(right: 12.0),
+                        decoration: new BoxDecoration(
+                            border: new Border(
+                                right: new BorderSide(
+                                    width: 2.0, color: Colors.green))),
+                        child: Icon(Icons.format_quote, color: Colors.green),
+                      ),
+                      title: Text(
+                        user,
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      trailing: Icon(Icons.content_copy,
+                          color: Colors.green, size: 30.0),
+                      onTap: () {
+                        ClipboardManager.copyToClipBoard(user).then((result) {
+                          final snackBar = SnackBar(
+                            content: Text('Copied to Clipboard'),
+                            action: SnackBarAction(
+                              label: 'Undo',
+                              onPressed: () {},
+                            ),
+                          );
+                          Scaffold.of(context).showSnackBar(snackBar);
+                        });
+                      },
                     ),
-                    trailing: Icon(Icons.content_copy,
-                        color: Colors.green, size: 30.0),
-                    onTap: () {
-                      ClipboardManager.copyToClipBoard(user).then((result) {
-                        final snackBar = SnackBar(
-                          content: Text('Copied to Clipboard'),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {},
-                          ),
-                        );
-                        Scaffold.of(context).showSnackBar(snackBar);
-                      });
-                    },
                   ),
                 ),
-              ),
-            );
-
-            //   ListTile(
-            //   leading: Icon(user.completed ? Icons.done : Icons.close),
-            //   title: Text(user.title),
-            //   subtitle: Text('Here is a second line'),
-            //   onTap: () {
-            //     print(index);
-            //   },
-            // );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
