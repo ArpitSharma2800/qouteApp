@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:qouteapp/models/qouteData.dart';
-import 'package:qouteapp/services/qouteapi.dart';
 import 'package:clipboard_manager/clipboard_manager.dart';
+import 'package:http/http.dart' as http;
+import 'package:qouteapp/models/postResponse.dart';
 
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
@@ -14,9 +17,8 @@ class _HomeState extends State<Home> {
   Map data = {};
   GlobalKey<RefreshIndicatorState> refreshKey;
   List<QouteElement> _users;
-  List<Qoute> _data;
   bool _loading = true;
-
+  final TextEditingController quoteController = TextEditingController();
   Future<Null> onrefresh() async {
     await Future.delayed(Duration(seconds: 2));
     Navigator.pushReplacementNamed(context, '/');
@@ -26,6 +28,34 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+  }
+
+  String apiUrlLogin = "https://qoute.arpitsharma.tech/add";
+  Future<Postresponse> login(String quote) async {
+    Map map = {
+      'uuid': 'arpit',
+      'qoute': [
+        {'title': quote}
+      ]
+    };
+    String body = json.encode(map);
+    try {
+      var response = await http.post(
+        Uri.encodeFull(apiUrlLogin),
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+      if (200 == response.statusCode) {
+        onrefresh();
+        return (null);
+      } else {
+        print(response.body);
+        return null;
+      }
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
   @override
@@ -43,11 +73,35 @@ class _HomeState extends State<Home> {
         context: context,
         builder: (BuildContext context) {
           // return object of type Dialog
+          var screenSize = MediaQuery.of(context).size;
           return AlertDialog(
-            title: new Text("Sorry for inconvenience"),
-            content: new Text("Our team is working on fixing this issue!"),
+            title: new Text("Add your quote!!"),
+            content: Container(
+              height: screenSize.height / 6,
+              width: screenSize.width - 50.0,
+              padding: EdgeInsets.fromLTRB(00.0, 10.0, 0.0, 0.0),
+              child: TextField(
+                controller: quoteController,
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.green, width: 2.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black, width: 2.0),
+                    ),
+                    hintText: "Qoute",
+                    hintStyle: TextStyle(color: Colors.black)),
+              ),
+            ),
             actions: <Widget>[
-              // usually buttons at the bottom of the dialog
+              new FlatButton(
+                child: new Text("Submit"),
+                onPressed: () {
+                  final String quote = quoteController.text;
+                  login(quote);
+                },
+              ),
               new FlatButton(
                 child: new Text("Close"),
                 onPressed: () {
@@ -125,14 +179,14 @@ class _HomeState extends State<Home> {
                 child: Card(
                   elevation: 2.0,
                   margin:
-                      new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                      new EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.black,
                     ),
                     child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
                       leading: Container(
                         padding: EdgeInsets.only(right: 12.0),
                         decoration: new BoxDecoration(
