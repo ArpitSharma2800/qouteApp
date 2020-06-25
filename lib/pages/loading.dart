@@ -24,17 +24,6 @@ class _LoadingState extends State<Loading> {
     Navigator.pushReplacementNamed(context, '/home',
         arguments: {'uuid': _data[0].uuid, 'qoute': _data, 'key': refreshKey});
   }
-  // void setupWorldTime() async {
-  //   WorldTime instance = WorldTime(
-  //       location: 'Kolkata', flag: 'germany.png', url: 'Asia/Kolkata');
-  //   await instance.getTime();
-  //   Navigator.pushReplacementNamed(context, '/home', arguments: {
-  //     'location': instance.location,
-  //     'flag': instance.flag,
-  //     'time': instance.time,
-  //     'isDayTime': instance.isDayTime
-  //   });
-  // }
 
   @override
   void initState() {
@@ -44,12 +33,11 @@ class _LoadingState extends State<Loading> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Center(
+    return Center(
       child: SpinKitCubeGrid(
         color: Colors.green[400],
         size: 80.0,
       ),
-    ));
+    );
   }
 }

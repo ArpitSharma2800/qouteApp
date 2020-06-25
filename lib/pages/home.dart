@@ -1,14 +1,13 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:qouteapp/models/qouteData.dart';
-import 'package:clipboard_manager/clipboard_manager.dart';
+import 'package:flutter_clipboard_manager/flutter_clipboard_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:qouteapp/models/postResponse.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
-
   @override
   _HomeState createState() => _HomeState();
 }
@@ -18,6 +17,7 @@ class _HomeState extends State<Home> {
   GlobalKey<RefreshIndicatorState> refreshKey;
   List<QouteElement> _users;
   bool _loading = true;
+  bool _update = false;
   final TextEditingController quoteController = TextEditingController();
   Future<Null> onrefresh() async {
     await Future.delayed(Duration(seconds: 2));
@@ -68,48 +68,73 @@ class _HomeState extends State<Home> {
     });
 
     void _showDialog() {
-      // flutter defined function
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          // return object of type Dialog
           var screenSize = MediaQuery.of(context).size;
-          return AlertDialog(
-            title: new Text("Add your quote!!"),
-            content: Container(
-              height: screenSize.height / 6,
-              width: screenSize.width - 50.0,
-              padding: EdgeInsets.fromLTRB(00.0, 10.0, 0.0, 0.0),
-              child: TextField(
-                controller: quoteController,
-                style: TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.green, width: 2.0),
+          return (_update == false
+              ? AlertDialog(
+                  title: new Text("Add your quote!!"),
+                  content: Container(
+                    height: screenSize.height / 6,
+                    width: screenSize.width - 50.0,
+                    padding: EdgeInsets.fromLTRB(00.0, 10.0, 0.0, 0.0),
+                    child: Column(
+                      children: <Widget>[
+                        TextField(
+                          controller: quoteController,
+                          style: TextStyle(color: Colors.black),
+                          decoration: InputDecoration(
+                              focusedBorder: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.green, width: 2.0),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.black, width: 2.0),
+                              ),
+                              hintText: "Qoute",
+                              hintStyle: TextStyle(color: Colors.black)),
+                        ),
+                        SizedBox(height: 40.0),
+                        Text(
+                          "Page wll automatically refresh after 2 seconds!!",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      ],
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black, width: 2.0),
+                  ),
+                  actions: <Widget>[
+                    new FlatButton(
+                      child: new Text("Submit"),
+                      onPressed: () {
+                        final String quote = quoteController.text;
+                        if (quote.isNotEmpty) {
+                          login(quote);
+                          Navigator.of(context).pop();
+                          setState(() {
+                            _update = true;
+                          });
+                        }
+                      },
                     ),
-                    hintText: "Qoute",
-                    hintStyle: TextStyle(color: Colors.black)),
-              ),
-            ),
-            actions: <Widget>[
-              new FlatButton(
-                child: new Text("Submit"),
-                onPressed: () {
-                  final String quote = quoteController.text;
-                  login(quote);
-                },
-              ),
-              new FlatButton(
-                child: new Text("Close"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
+                    new FlatButton(
+                      child: new Text("Close"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                )
+              : Center(
+                  child: SpinKitCubeGrid(
+                    color: Colors.green[400],
+                    size: 80.0,
+                  ),
+                ));
         },
       );
     }
@@ -117,7 +142,7 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _loading ? 'Loading...' : 'Qoutes',
+          _loading ? 'Loading...' : 'Quotes',
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
@@ -139,8 +164,6 @@ class _HomeState extends State<Home> {
         },
       ),
       bottomNavigationBar: BottomAppBar(
-        // shape: CircularNotchedRectangle(),
-        // notchMargin: 4.0,
         child: new Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -203,11 +226,20 @@ class _HomeState extends State<Home> {
                       trailing: Icon(Icons.content_copy,
                           color: Colors.green, size: 30.0),
                       onTap: () {
-                        ClipboardManager.copyToClipBoard(user).then((result) {
+                        final snackBar = SnackBar(
+                          content: Text('Copied to Clipboard'),
+                          action: SnackBarAction(
+                            label: 'Okey',
+                            onPressed: () {},
+                          ),
+                        );
+                        Scaffold.of(context).showSnackBar(snackBar);
+                        FlutterClipboardManager.copyToClipBoard(user)
+                            .then((result) {
                           final snackBar = SnackBar(
                             content: Text('Copied to Clipboard'),
                             action: SnackBarAction(
-                              label: 'Undo',
+                              label: 'Okey',
                               onPressed: () {},
                             ),
                           );
